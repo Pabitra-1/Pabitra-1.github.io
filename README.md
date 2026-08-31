@@ -165,3 +165,174 @@ int main() {
 
     return 0;
 }
+
+
+
+## 2nd code
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    int height;
+    struct Node *left;
+    struct Node *right;
+};
+
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+int height(struct Node *node) {
+    if (node == NULL)
+        return 0;
+
+    return node->height;
+}
+
+struct Node* createNode(int data) {
+    struct Node *newNode =
+        (struct Node*)malloc(sizeof(struct Node));
+
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    newNode->height = 1;
+
+    return newNode;
+}
+
+int getBalance(struct Node *node) {
+    if (node == NULL)
+        return 0;
+
+    return height(node->left) - height(node->right);
+}
+
+/* Right Rotation */
+struct Node* rightRotate(struct Node *y) {
+    struct Node *x = y->left;
+    struct Node *T2 = x->right;
+
+    x->right = y;
+    y->left = T2;
+
+    y->height =
+        1 + max(height(y->left), height(y->right));
+
+    x->height =
+        1 + max(height(x->left), height(x->right));
+
+    return x;
+}
+
+/* Left Rotation */
+struct Node* leftRotate(struct Node *x) {
+    struct Node *y = x->right;
+    struct Node *T2 = y->left;
+
+    y->left = x;
+    x->right = T2;
+
+    x->height =
+        1 + max(height(x->left), height(x->right));
+
+    y->height =
+        1 + max(height(y->left), height(y->right));
+
+    return y;
+}
+
+/* Insert */
+struct Node* insert(struct Node *node, int data) {
+
+    if (node == NULL)
+        return createNode(data);
+
+    if (data < node->data)
+        node->left = insert(node->left, data);
+    else if (data > node->data)
+        node->right = insert(node->right, data);
+    else
+        return node;
+
+    node->height =
+        1 + max(height(node->left), height(node->right));
+
+    int balance = getBalance(node);
+
+    /* LL */
+    if (balance > 1 && data < node->left->data)
+        return rightRotate(node);
+
+    /* RR */
+    if (balance < -1 && data > node->right->data)
+        return leftRotate(node);
+
+    /* LR */
+    if (balance > 1 && data > node->left->data) {
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
+    }
+
+    /* RL */
+    if (balance < -1 && data < node->right->data) {
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
+    }
+
+    return node;
+}
+
+/* Search an element */
+struct Node* search(struct Node *root, int key) {
+
+    if (root == NULL)
+        return NULL;
+
+    if (key == root->data)
+        return root;
+
+    if (key < root->data)
+        return search(root->left, key);
+
+    return search(root->right, key);
+}
+
+/* Inorder traversal */
+void inorder(struct Node *root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->data);
+        inorder(root->right);
+    }
+}
+
+int main() {
+    struct Node *root = NULL;
+    int n, data, key;
+
+    printf("Enter number of elements: ");
+    scanf("%d", &n);
+
+    printf("Enter %d integers:\n", n);
+
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &data);
+        root = insert(root, data);
+    }
+
+    printf("\nAVL Tree (Inorder): ");
+    inorder(root);
+
+    printf("\n\nEnter element to search: ");
+    scanf("%d", &key);
+
+    if (search(root, key) != NULL)
+        printf("%d is present in the AVL tree.\n", key);
+    else
+        printf("%d is not present in the AVL tree.\n", key);
+
+    return 0;
+}
